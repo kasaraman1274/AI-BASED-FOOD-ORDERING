@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="p-5 text-center bg-light rounded-3 shadow-sm mb-5">
+    <h1 class="display-4 fw-bold">Hungry? We've got you covered!</h1>
+    <p class="lead mt-3 mb-4">Delicious food delivered to your door. Ask our AI Assistant for recommendations!</p>
+    <a href="{% url 'menu' %}" class="btn btn-primary btn-lg px-4 gap-3">View Full Menu</a>
+</div>
+
+<!-- Featured Items -->
+<h2 class="mb-4">Popular Choices</h2>
+<div class="row gy-4">
+    {% for item in featured_items %}
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm food-card bg-light">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 200px; object-fit: cover;">
+            {% else %}
+            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span>No Image</span>
+            </div>
+            {% endif %}
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ item.name }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">₹{{ item.price }}</h6>
+                <p class="card-text small text-truncate">{{ item.description }}</p>
+                <div class="mt-auto">
+                    <a href="{% url 'add_to_cart' item.id %}" class="btn btn-outline-primary w-100">Add to Cart</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center text-muted">
+        <p>No featured items available right now.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- CTA Section -->
+<div class="row align-items-md-stretch mt-5">
+    <div class="col-md-6 mb-4">
+        <div class="h-100 p-5 text-white bg-dark rounded-3 shadow">
+            <h2>Not sure what to eat?</h2>
+            <p>Chat with our AI Foodie Assistant! It can recommend meals based on your mood, dietary preferences, or spice level.</p>
+            <button class="btn btn-outline-light mt-3" onclick="$('#chatbot-toggle').click()">Chat Now</button>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="h-100 p-5 bg-light border rounded-3 shadow-sm">
+            <h2>Join our community</h2>
+            <p>Create an account to track your orders, save your delivery addresses, and get personalized recommendations.</p>
+            <a href="{% url 'register' %}" class="btn btn-outline-secondary mt-3">Sign Up</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

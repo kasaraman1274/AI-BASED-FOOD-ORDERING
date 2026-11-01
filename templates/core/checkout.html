@@ -1,0 +1,427 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<form method="post" id="checkout-form">
+    {% csrf_token %}
+    <div class="row">
+        <!-- Left Column: Delivery Address & Payment Method -->
+        <div class="col-lg-8">
+            <!-- 1. Delivery Address Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex align-items-center gap-2 py-3">
+                    <span class="fs-5 text-danger"><i class="bi bi-geo-alt-fill"></i></span>
+                    <h5 class="mb-0 fw-bold">1. Delivery Address</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="house_number" class="form-label text-light">House / Flat No. <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="house_number" name="house_number"
+                                   placeholder="e.g. Flat 402, Green Heights"
+                                   value="{{ request.user.userprofile.house_number|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="village" class="form-label text-light">Village / Locality <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="village" name="village"
+                                   placeholder="e.g. Gandhi Nagar"
+                                   value="{{ request.user.userprofile.village|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="district" class="form-label text-light">District / City <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="district" name="district"
+                                   placeholder="e.g. Mumbai"
+                                   value="{{ request.user.userprofile.district|default:'' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="state" class="form-label text-light">State <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="state" name="state"
+                                   placeholder="e.g. Maharashtra"
+                                   value="{{ request.user.userprofile.state|default:'' }}" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Payment Method Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-5 text-success"><i class="bi bi-credit-card-2-front-fill"></i></span>
+                        <h5 class="mb-0 fw-bold">2. Payment Method</h5>
+                    </div>
+                    <span class="badge bg-secondary-subtle text-light border border-secondary-subtle px-2 py-1" style="font-size: 0.75rem;">
+                        <i class="bi bi-shield-lock-fill text-success me-1"></i> 100% Secure Checkout
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Choose how you'd like to pay for your delicious meal:</p>
+
+                    <!-- Payment Options Grid -->
+                    <div class="d-flex flex-column gap-3 mb-4" id="payment-options-container">
+                        <!-- Option 1: Cash on Delivery -->
+                        <label class="payment-option-card selected" for="pm-cod">
+                            <input class="form-check-input mt-0 payment-radio" type="radio" name="payment_method" id="pm-cod" value="cod" checked>
+                            <div class="payment-icon-wrapper text-warning">
+                                <i class="bi bi-cash-stack"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold text-white d-flex align-items-center gap-2">
+                                    Cash on Delivery (COD)
+                                    <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">Popular</span>
+                                </div>
+                                <div class="text-muted small">Pay with cash or UPI on delivery at your doorstep</div>
+                            </div>
+                        </label>
+
+                        <!-- Subpanel for COD -->
+                        <div class="payment-subpanel" id="panel-cod">
+                            <div class="d-flex align-items-start gap-3">
+                                <span class="fs-4 text-warning"><i class="bi bi-info-circle-fill"></i></span>
+                                <div>
+                                    <h6 class="text-white mb-1">Pay when your order arrives</h6>
+                                    <p class="text-muted small mb-0">
+                                        Please keep exact cash ready or you can also scan our delivery partner's QR code on arrival. No extra convenience fee!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: UPI / QR Code -->
+                        <label class="payment-option-card" for="pm-upi">
+                            <input class="form-check-input mt-0 payment-radio" type="radio" name="payment_method" id="pm-upi" value="upi">
+                            <div class="payment-icon-wrapper text-info">
+                                <i class="bi bi-qr-code-scan"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold text-white d-flex align-items-center gap-2">
+                                    UPI / QR Code
+                                    <span class="badge bg-info text-dark" style="font-size: 0.7rem;">Instant &amp; Zero Fee</span>
+                                </div>
+                                <div class="text-muted small">Google Pay, PhonePe, Paytm, BHIM &amp; any UPI App</div>
+                            </div>
+                        </label>
+
+                        <!-- Subpanel for UPI -->
+                        <div class="payment-subpanel d-none" id="panel-upi">
+                            <!-- Toggle Tabs: UPI ID vs QR Code -->
+                            <ul class="nav nav-pills nav-fill mb-3" id="upiTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active py-2 text-white" id="upi-id-tab" data-bs-toggle="pill" data-bs-target="#tab-upi-id" type="button" role="tab">
+                                        <i class="bi bi-phone me-1"></i> Enter UPI ID / VPA
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link py-2 text-white" id="upi-qr-tab" data-bs-toggle="pill" data-bs-target="#tab-upi-qr" type="button" role="tab">
+                                        <i class="bi bi-qr-code me-1"></i> Scan &amp; Pay QR
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="upiTabContent">
+                                <!-- Tab 1: UPI ID Input -->
+                                <div class="tab-pane fade show active" id="tab-upi-id" role="tabpanel">
+                                    <div class="mb-3">
+                                        <label for="upi_id" class="form-label text-light small fw-bold">Virtual Payment Address (UPI ID)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-dark text-light border-secondary">
+                                                <i class="bi bi-at"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="upi_id" name="upi_id" placeholder="e.g. mobile@upi or username@okhdfcbank">
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center flex-wrap gap-1">
+                                        <span class="text-muted small me-1">Quick handle:</span>
+                                        <span class="upi-chip" onclick="appendUpiSuffix('@okhdfcbank')">@okhdfcbank</span>
+                                        <span class="upi-chip" onclick="appendUpiSuffix('@okaxis')">@okaxis</span>
+                                        <span class="upi-chip" onclick="appendUpiSuffix('@ybl')">@ybl</span>
+                                        <span class="upi-chip" onclick="appendUpiSuffix('@paytm')">@paytm</span>
+                                        <span class="upi-chip" onclick="appendUpiSuffix('@ibl')">@ibl</span>
+                                    </div>
+                                </div>
+
+                                <!-- Tab 2: Dynamic QR Code -->
+                                <div class="tab-pane fade text-center py-2" id="tab-upi-qr" role="tabpanel">
+                                    <div class="qr-code-wrapper mb-2">
+                                        <!-- Dynamic QR for UPI payment -->
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=upi://pay?pa=aifoodie@okhdfcbank&pn=AI%20Foodie&am={{ cart.get_total_price }}&cu=INR" 
+                                             alt="Scan to Pay QR" class="img-fluid rounded" style="width: 150px; height: 150px;">
+                                    </div>
+                                    <p class="text-light fw-bold mb-1">Scan &amp; Pay <span class="text-success">₹{{ cart.get_total_price }}</span></p>
+                                    <p class="text-muted small mb-0">Open Google Pay, PhonePe, or Paytm and point your camera to scan.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Option 3: Credit / Debit Card -->
+                        <label class="payment-option-card" for="pm-card">
+                            <input class="form-check-input mt-0 payment-radio" type="radio" name="payment_method" id="pm-card" value="card">
+                            <div class="payment-icon-wrapper text-primary">
+                                <i class="bi bi-credit-card"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold text-white d-flex align-items-center gap-2">
+                                    Credit / Debit Card
+                                    <span class="badge bg-primary text-white" style="font-size: 0.7rem;">Visa / Master / RuPay</span>
+                                </div>
+                                <div class="text-muted small">Pay securely using any major credit or debit card</div>
+                            </div>
+                        </label>
+
+                        <!-- Subpanel for Card -->
+                        <div class="payment-subpanel d-none" id="panel-card">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label for="card_number" class="form-label text-light small fw-bold">Card Number</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark text-light border-secondary">
+                                            <i class="bi bi-credit-card-2-front"></i>
+                                        </span>
+                                        <input type="text" class="form-control" id="card_number" name="card_number"
+                                               placeholder="4532  ••••  ••••  8920" maxlength="19">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label for="card_name" class="form-label text-light small fw-bold">Cardholder Name</label>
+                                    <input type="text" class="form-control" id="card_name" name="card_name"
+                                           placeholder="e.g. John Doe">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="card_expiry" class="form-label text-light small fw-bold">Expiry Date</label>
+                                    <input type="text" class="form-control" id="card_expiry" name="card_expiry"
+                                           placeholder="MM / YY" maxlength="5">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="card_cvv" class="form-label text-light small fw-bold">CVV / CVC</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="card_cvv" name="card_cvv"
+                                               placeholder="•••" maxlength="4">
+                                        <span class="input-group-text bg-dark text-muted border-secondary" title="3 or 4 digits on back of card">
+                                            <i class="bi bi-question-circle"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-3 text-muted small">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <span>Your card data is end-to-end encrypted with 256-bit bank grade security.</span>
+                            </div>
+                        </div>
+
+                        <!-- Option 4: Net Banking -->
+                        <label class="payment-option-card" for="pm-netbanking">
+                            <input class="form-check-input mt-0 payment-radio" type="radio" name="payment_method" id="pm-netbanking" value="netbanking">
+                            <div class="payment-icon-wrapper text-secondary">
+                                <i class="bi bi-bank2"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold text-white d-flex align-items-center gap-2">
+                                    Net Banking
+                                </div>
+                                <div class="text-muted small">Direct payment from your bank account</div>
+                            </div>
+                        </label>
+
+                        <!-- Subpanel for Net Banking -->
+                        <div class="payment-subpanel d-none" id="panel-netbanking">
+                            <p class="text-light small fw-bold mb-2">Select Popular Bank:</p>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4 col-sm-4">
+                                    <div class="bank-option-btn active" onclick="selectBank(this, 'SBI')">
+                                        <i class="bi bi-building d-block mb-1 fs-5"></i> SBI
+                                    </div>
+                                </div>
+                                <div class="col-4 col-sm-4">
+                                    <div class="bank-option-btn" onclick="selectBank(this, 'HDFC')">
+                                        <i class="bi bi-building d-block mb-1 fs-5"></i> HDFC
+                                    </div>
+                                </div>
+                                <div class="col-4 col-sm-4">
+                                    <div class="bank-option-btn" onclick="selectBank(this, 'ICICI')">
+                                        <i class="bi bi-building d-block mb-1 fs-5"></i> ICICI
+                                    </div>
+                                </div>
+                                <div class="col-4 col-sm-4">
+                                    <div class="bank-option-btn" onclick="selectBank(this, 'AXIS')">
+                                        <i class="bi bi-building d-block mb-1 fs-5"></i> Axis
+                                    </div>
+                                </div>
+                                <div class="col-4 col-sm-4">
+                                    <div class="bank-option-btn" onclick="selectBank(this, 'KOTAK')">
+                                        <i class="bi bi-building d-block mb-1 fs-5"></i> Kotak
+                                    </div>
+                                </div>
+                                <div class="col-4 col-sm-4">
+                                    <div class="bank-option-btn" onclick="selectBank(this, 'PNB')">
+                                        <i class="bi bi-building d-block mb-1 fs-5"></i> PNB
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="bank_name" id="selected-bank" value="SBI">
+
+                            <label for="other-banks" class="form-label text-light small fw-bold">Or Choose Other Bank</label>
+                            <select class="form-select" id="other-banks" onchange="document.getElementById('selected-bank').value = this.value;">
+                                <option value="" selected disabled>-- Select another bank --</option>
+                                <option value="Bank of Baroda">Bank of Baroda</option>
+                                <option value="Canara Bank">Canara Bank</option>
+                                <option value="Union Bank of India">Union Bank of India</option>
+                                <option value="IndusInd Bank">IndusInd Bank</option>
+                                <option value="Yes Bank">Yes Bank</option>
+                                <option value="Federal Bank">Federal Bank</option>
+                                <option value="IDFC FIRST Bank">IDFC FIRST Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Order Summary & Place Order Button -->
+        <div class="col-lg-4">
+            <div class="card shadow sticky-top" style="top: 85px;">
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush mb-3">
+                        {% for item in cart.items.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center lh-sm px-0 bg-transparent text-light border-secondary">
+                                <div class="pe-2">
+                                    <h6 class="my-0 text-white">{{ item.food_item.name }} <span class="badge bg-secondary-subtle text-light rounded-pill ms-1">x{{ item.quantity }}</span></h6>
+                                    <small class="text-muted">{{ item.food_item.category.name }}</small>
+                                </div>
+                                <span class="fw-semibold text-light">₹{{ item.get_total_price }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="border-top border-secondary pt-3 mb-3">
+                        <div class="d-flex justify-content-between text-muted small mb-2">
+                            <span>Item Subtotal</span>
+                            <span>₹{{ cart.get_total_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mb-2">
+                            <span>Delivery Fee</span>
+                            <span class="text-success fw-bold">FREE</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mb-3">
+                            <span>Taxes &amp; Restaurant Charges</span>
+                            <span class="text-muted">Included</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                            <div>
+                                <span class="fw-bold fs-5 text-white">Grand Total</span>
+                                <div class="text-muted" style="font-size: 0.72rem;">(Inclusive of all taxes)</div>
+                            </div>
+                            <strong class="fs-4 text-success">₹{{ cart.get_total_price }}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Place Order Button -->
+                    <button type="submit" id="submit-order-btn" class="btn btn-success btn-lg w-100 shadow py-3 fw-bold d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <span id="btn-text">Place Order (Cash on Delivery)</span>
+                    </button>
+
+                    <div class="text-center text-muted small mt-3 d-flex align-items-center justify-content-center gap-1">
+                        <i class="bi bi-lock-fill text-success"></i>
+                        <span>Guaranteed Safe &amp; Secure Checkout</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const radios = document.querySelectorAll('input[name="payment_method"]');
+    const optionCards = document.querySelectorAll('.payment-option-card');
+    const btnText = document.getElementById('btn-text');
+    const totalPrice = "{{ cart.get_total_price }}";
+
+    const panels = {
+        'cod': document.getElementById('panel-cod'),
+        'upi': document.getElementById('panel-upi'),
+        'card': document.getElementById('panel-card'),
+        'netbanking': document.getElementById('panel-netbanking')
+    };
+
+    function updatePaymentUI(selectedMethod) {
+        // Update card highlight
+        optionCards.forEach(card => card.classList.remove('selected'));
+        const activeCard = document.querySelector(`label[for="pm-${selectedMethod}"]`);
+        if (activeCard) activeCard.classList.add('selected');
+
+        // Toggle subpanels
+        Object.keys(panels).forEach(key => {
+            if (panels[key]) {
+                if (key === selectedMethod) {
+                    panels[key].classList.remove('d-none');
+                } else {
+                    panels[key].classList.add('d-none');
+                }
+            }
+        });
+
+        // Update button text
+        if (selectedMethod === 'cod') {
+            btnText.textContent = `Place Order (Cash on Delivery)`;
+        } else if (selectedMethod === 'upi') {
+            btnText.textContent = `Pay ₹${totalPrice} via UPI & Place Order`;
+        } else if (selectedMethod === 'card') {
+            btnText.textContent = `Pay ₹${totalPrice} via Card & Place Order`;
+        } else if (selectedMethod === 'netbanking') {
+            btnText.textContent = `Proceed to Pay ₹${totalPrice} via Net Banking`;
+        }
+    }
+
+    radios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            updatePaymentUI(this.value);
+        });
+    });
+
+    // Format Card Number (adds space every 4 digits)
+    const cardInput = document.getElementById('card_number');
+    if (cardInput) {
+        cardInput.addEventListener('input', function (e) {
+            let val = e.target.value.replace(/\D/g, '');
+            val = val.substring(0, 16);
+            let formatted = val.match(/.{1,4}/g)?.join(' ') || val;
+            e.target.value = formatted;
+        });
+    }
+
+    // Format Card Expiry (MM/YY)
+    const expiryInput = document.getElementById('card_expiry');
+    if (expiryInput) {
+        expiryInput.addEventListener('input', function (e) {
+            let val = e.target.value.replace(/\D/g, '');
+            if (val.length >= 2) {
+                e.target.value = val.substring(0, 2) + '/' + val.substring(2, 4);
+            } else {
+                e.target.value = val;
+            }
+        });
+    }
+});
+
+function appendUpiSuffix(suffix) {
+    const upiInput = document.getElementById('upi_id');
+    if (upiInput) {
+        let current = upiInput.value.split('@')[0].trim();
+        if (!current) current = 'user';
+        upiInput.value = current + suffix;
+        upiInput.focus();
+    }
+}
+
+function selectBank(element, bankCode) {
+    document.querySelectorAll('.bank-option-btn').forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+    document.getElementById('selected-bank').value = bankCode;
+    const otherSelect = document.getElementById('other-banks');
+    if (otherSelect) otherSelect.selectedIndex = 0;
+}
+</script>
+{% endblock %}

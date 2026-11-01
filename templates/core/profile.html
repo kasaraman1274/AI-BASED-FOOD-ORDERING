@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow">
+            <div class="card-body">
+                <h4 class="card-title">Update Profile</h4>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-body">
+                <h4 class="card-title">Order History</h4>
+                {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Date</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                    <th class="text-end">Receipt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td class="fw-bold">#{{ order.id }}</td>
+                                    <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            <span class="small text-white">
+                                                {% if order.payment_method == 'cod' %}
+                                                    <i class="bi bi-cash-stack text-warning me-1"></i> COD
+                                                {% elif order.payment_method == 'upi' %}
+                                                    <i class="bi bi-qr-code-scan text-info me-1"></i> UPI
+                                                {% elif order.payment_method == 'card' %}
+                                                    <i class="bi bi-credit-card-fill text-primary me-1"></i> Card
+                                                {% elif order.payment_method == 'netbanking' %}
+                                                    <i class="bi bi-bank2 text-secondary me-1"></i> Net Banking
+                                                {% else %}
+                                                    {{ order.get_payment_method_title }}
+                                                {% endif %}
+                                            </span>
+                                            <span style="font-size: 0.7rem;">
+                                                {% if order.payment_status == 'Completed' %}
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-1">Paid</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-1">Pending</span>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if order.status == 'Pending' %}bg-warning text-dark{% elif order.status == 'Delivered' %}bg-success{% else %}bg-info text-dark{% endif %}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-success">₹{{ order.total_price }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'order_confirmation' order.id %}" class="btn btn-sm btn-outline-info" title="View Order Receipt">
+                                            <i class="bi bi-receipt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">You haven't placed any orders yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

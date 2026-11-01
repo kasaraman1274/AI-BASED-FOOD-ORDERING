@@ -1,0 +1,281 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-5">
+        <div class="card shadow-lg border-0" style="background: rgba(22, 22, 26, 0.9); backdrop-filter: blur(16px); border-radius: 18px;">
+            <div class="card-body p-4 p-md-5">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3 shadow"
+                         style="width: 68px; height: 68px; background: linear-gradient(135deg, #ff4757, #ff6b81); font-size: 2rem; color: #fff;">
+                        {% if otp_step == 'verify' %}
+                            <i class="bi bi-shield-check"></i>
+                        {% else %}
+                            <i class="bi bi-person-fill-lock"></i>
+                        {% endif %}
+                    </div>
+                    <h3 class="fw-bold text-white mb-1">
+                        {% if otp_step == 'verify' %}Verify OTP{% else %}Sign In to AI Foodie{% endif %}
+                    </h3>
+                    <p class="text-muted small mb-0">
+                        {% if otp_step == 'verify' %}
+                            Enter the 6-digit code sent to your {{ otp_auth.channel|lower }}
+                        {% else %}
+                            Instant &amp; secure login with OTP or password
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Navigation Tabs (OTP vs Password) -->
+                {% if otp_step != 'verify' %}
+                <ul class="nav nav-pills nav-fill mb-4 p-1 rounded-pill" style="background: rgba(255, 255, 255, 0.06);" id="loginTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill py-2 text-white {% if active_tab != 'password' %}active bg-danger{% endif %}"
+                                id="otp-tab" data-bs-toggle="pill" data-bs-target="#tab-otp" type="button" role="tab">
+                            <i class="bi bi-phone-vibrate me-1"></i> OTP Login
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill py-2 text-white {% if active_tab == 'password' %}active bg-danger{% endif %}"
+                                id="password-tab" data-bs-toggle="pill" data-bs-target="#tab-password" type="button" role="tab">
+                            <i class="bi bi-key me-1"></i> Password
+                        </button>
+                    </li>
+                </ul>
+                {% endif %}
+
+                <div class="tab-content" id="loginTabContent">
+                    <!-- ========================================== -->
+                    <!-- TAB 1: OTP LOGIN                           -->
+                    <!-- ========================================== -->
+                    <div class="tab-pane fade {% if active_tab != 'password' %}show active{% endif %}" id="tab-otp" role="tabpanel">
+                        {% if otp_step == 'verify' %}
+                            <!-- Step 2: VERIFY OTP -->
+                            <div class="text-center p-3 mb-3 rounded" style="background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2);">
+                                <div class="text-muted small mb-1">Verification code sent via <span class="badge bg-secondary">{{ otp_auth.channel }}</span></div>
+                                <div class="fw-bold text-white fs-6 mb-1">{{ otp_auth.masked }}</div>
+                                <a href="{% url 'login' %}?reset=1" class="text-primary text-decoration-none small">
+                                    <i class="bi bi-pencil-square me-1"></i> Change email / phone
+                                </a>
+                            </div>
+
+                            <form method="post" id="verify-otp-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="verify_otp">
+                                <input type="hidden" name="next" value="{{ next }}">
+
+                                <div class="mb-4">
+                                    <label for="otp-input" class="form-label text-light text-center w-100 fw-semibold mb-2">
+                                        Enter 6-Digit OTP
+                                    </label>
+                                    <input type="text"
+                                           class="form-control form-control-lg text-center fw-bold"
+                                           id="otp-input"
+                                           name="otp"
+                                           maxlength="6"
+                                           pattern="[0-9]{6}"
+                                           inputmode="numeric"
+                                           autocomplete="one-time-code"
+                                           placeholder="••••••"
+                                           style="letter-spacing: 0.6em; font-size: 1.8rem; background: rgba(0, 0, 0, 0.5); color: #2ed573; border: 2px solid rgba(46, 213, 115, 0.4); border-radius: 12px;"
+                                           autofocus
+                                           required>
+                                    <div class="form-text text-muted text-center small mt-2">
+                                        <i class="bi bi-clock-history me-1"></i> Code is valid for 10 minutes
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold rounded-pill shadow mb-3">
+                                    <i class="bi bi-check-circle me-1"></i> Verify &amp; Login
+                                </button>
+                            </form>
+
+                            <!-- Resend OTP Form -->
+                            <div class="text-center pt-2">
+                                <span class="text-muted small" id="resend-countdown-text">
+                                    Resend code in <strong id="resend-timer" class="text-warning">30</strong>s
+                                </span>
+                                <form method="post" id="resend-otp-form" class="d-none">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="resend_otp">
+                                    <button type="submit" class="btn btn-link text-info p-0 small text-decoration-none fw-bold" id="resend-btn">
+                                        <i class="bi bi-arrow-clockwise me-1"></i> Resend OTP Code
+                                    </button>
+                                </form>
+                            </div>
+
+                        {% else %}
+                            <!-- Step 1: REQUEST OTP -->
+                            <form method="post" id="send-otp-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="send_otp">
+                                <input type="hidden" name="next" value="{{ next }}">
+
+                                <div class="mb-3">
+                                    <label for="identifier-input" class="form-label text-light fw-semibold">
+                                        Email Address or Mobile Number
+                                    </label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text bg-dark text-muted border-secondary" id="identifier-icon">
+                                            <i class="bi bi-envelope-at"></i>
+                                        </span>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="identifier-input"
+                                               name="identifier"
+                                               placeholder="name@email.com or 10-digit mobile"
+                                               style="background: rgba(0, 0, 0, 0.4); color: #fff; border-color: rgba(255, 255, 255, 0.2);"
+                                               required
+                                               autofocus>
+                                    </div>
+                                    <div class="form-text text-muted small mt-2 d-flex align-items-center gap-1">
+                                        <i class="bi bi-info-circle text-info"></i>
+                                        <span>Works for registered and new users (auto account creation).</span>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold rounded-pill shadow mt-3" id="send-otp-btn">
+                                    <i class="bi bi-send-fill me-2"></i> Send Verification Code
+                                </button>
+                            </form>
+
+                            <div class="d-flex justify-content-center align-items-center gap-3 text-muted small mt-4 pt-2 border-top border-secondary">
+                                <span><i class="bi bi-shield-lock-fill text-success me-1"></i> No Password Needed</span>
+                                <span>•</span>
+                                <span><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Instant OTP</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ========================================== -->
+                    <!-- TAB 2: PASSWORD LOGIN                      -->
+                    <!-- ========================================== -->
+                    {% if otp_step != 'verify' %}
+                    <div class="tab-pane fade {% if active_tab == 'password' %}show active{% endif %}" id="tab-password" role="tabpanel">
+                        <form method="post" id="password-login-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="password_login">
+                            <input type="hidden" name="next" value="{{ next }}">
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label text-light fw-semibold">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-muted border-secondary">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="username" name="username"
+                                           placeholder="Enter your username"
+                                           style="background: rgba(0, 0, 0, 0.4); color: #fff; border-color: rgba(255, 255, 255, 0.2);"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label text-light fw-semibold">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark text-muted border-secondary">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" name="password"
+                                           placeholder="Enter your password"
+                                           style="background: rgba(0, 0, 0, 0.4); color: #fff; border-color: rgba(255, 255, 255, 0.2);"
+                                           required>
+                                    <button class="btn btn-outline-secondary" type="button" id="toggle-password" title="Show/Hide Password">
+                                        <i class="bi bi-eye" id="toggle-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold rounded-pill shadow mb-2">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Login with Password
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Footer Links -->
+                <div class="text-center mt-4 pt-3 border-top border-secondary">
+                    <p class="text-muted small mb-0">
+                        Don't have an account yet? 
+                        <a href="{% url 'register' %}" class="text-primary fw-bold text-decoration-none">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Dynamic icon switcher on identifier input (email vs phone)
+    const identifierInput = document.getElementById('identifier-input');
+    const identifierIcon = document.getElementById('identifier-icon');
+
+    if (identifierInput && identifierIcon) {
+        identifierInput.addEventListener('input', function () {
+            const val = this.value.trim();
+            if (val.includes('@')) {
+                identifierIcon.innerHTML = '<i class="bi bi-envelope-at text-info"></i>';
+            } else if (/^\+?\d+$/.test(val)) {
+                identifierIcon.innerHTML = '<i class="bi bi-phone text-warning"></i>';
+            } else {
+                identifierIcon.innerHTML = '<i class="bi bi-person text-muted"></i>';
+            }
+        });
+    }
+
+    // Toggle Password Visibility
+    const togglePasswordBtn = document.getElementById('toggle-password');
+    const passwordInput = document.getElementById('password');
+    const toggleEye = document.getElementById('toggle-eye');
+
+    if (togglePasswordBtn && passwordInput && toggleEye) {
+        togglePasswordBtn.addEventListener('click', function () {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleEye.classList.remove('bi-eye');
+                toggleEye.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleEye.classList.remove('bi-eye-slash');
+                toggleEye.classList.add('bi-eye');
+            }
+        });
+    }
+
+    // OTP Timer countdown (30s)
+    const timerElem = document.getElementById('resend-timer');
+    const countdownText = document.getElementById('resend-countdown-text');
+    const resendForm = document.getElementById('resend-otp-form');
+
+    if (timerElem && countdownText && resendForm) {
+        let timeLeft = 30;
+        const countdownInterval = setInterval(function () {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                countdownText.classList.add('d-none');
+                resendForm.classList.remove('d-none');
+            } else {
+                timerElem.textContent = timeLeft;
+            }
+        }, 1000);
+    }
+
+    // Auto submit OTP when 6 digits entered
+    const otpInput = document.getElementById('otp-input');
+    const verifyForm = document.getElementById('verify-otp-form');
+
+    if (otpInput && verifyForm) {
+        otpInput.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length === 6) {
+                verifyForm.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

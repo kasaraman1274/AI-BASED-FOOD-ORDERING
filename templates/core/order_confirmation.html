@@ -1,0 +1,174 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <!-- Success Banner -->
+        <div class="card shadow-lg mb-4 text-center py-4 border-success">
+            <div class="card-body">
+                <div class="display-3 text-success mb-3">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h2 class="text-white fw-bold mb-2">Order Confirmed!</h2>
+                <p class="text-muted fs-5 mb-3">
+                    Thank you, <strong class="text-light">{{ order.user.username }}</strong>! Your order has been placed and is being prepared in the kitchen.
+                </p>
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-dark border border-secondary">
+                    <span class="text-muted small">Order Number:</span>
+                    <strong class="text-white">#{{ order.id }}</strong>
+                    <span class="text-muted">•</span>
+                    <span class="text-muted small">{{ order.created_at|date:"M d, Y • h:i A" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="row g-4 mb-4">
+            <!-- Payment Summary Card -->
+            <div class="col-md-6">
+                <div class="card shadow h-100">
+                    <div class="card-header d-flex align-items-center gap-2 py-3">
+                        <span class="text-info fs-5"><i class="bi bi-credit-card-2-front"></i></span>
+                        <h5 class="mb-0 fw-bold">Payment Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
+                            <li class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Payment Method:</span>
+                                <span class="fw-bold text-white">
+                                    {% if order.payment_method == 'cod' %}
+                                        <i class="bi bi-cash-stack text-warning me-1"></i> Cash on Delivery
+                                    {% elif order.payment_method == 'upi' %}
+                                        <i class="bi bi-qr-code-scan text-info me-1"></i> UPI / QR Code
+                                    {% elif order.payment_method == 'card' %}
+                                        <i class="bi bi-credit-card-fill text-primary me-1"></i> Credit / Debit Card
+                                    {% elif order.payment_method == 'netbanking' %}
+                                        <i class="bi bi-bank2 text-secondary me-1"></i> Net Banking
+                                    {% else %}
+                                        {{ order.get_payment_method_title }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Payment Status:</span>
+                                <span>
+                                    {% if order.payment_status == 'Completed' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                            <i class="bi bi-check-lg me-1"></i> Paid (Completed)
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+                                            <i class="bi bi-clock-history me-1"></i> Pay on Delivery (Pending)
+                                        </span>
+                                    {% endif %}
+                                </span>
+                            </li>
+                            {% if order.transaction_id %}
+                            <li class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Transaction ID:</span>
+                                <code class="text-light bg-dark px-2 py-1 rounded small">{{ order.transaction_id }}</code>
+                            </li>
+                            {% endif %}
+                            <li class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                                <span class="text-muted">Total Paid / Payable:</span>
+                                <strong class="fs-5 text-success">₹{{ order.total_price }}</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Address & Status Card -->
+            <div class="col-md-6">
+                <div class="card shadow h-100">
+                    <div class="card-header d-flex align-items-center gap-2 py-3">
+                        <span class="text-danger fs-5"><i class="bi bi-geo-alt-fill"></i></span>
+                        <h5 class="mb-0 fw-bold">Delivery Info</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled mb-0 d-flex flex-column gap-3">
+                            <li>
+                                <div class="text-muted small">Delivery Address:</div>
+                                <div class="text-white fw-semibold mt-1">
+                                    {{ order.get_delivery_address|default:"Address on file" }}
+                                </div>
+                            </li>
+                            <li class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Order Status:</span>
+                                <span class="badge bg-primary px-2 py-1">
+                                    <i class="bi bi-bicycle me-1"></i> {{ order.status }}
+                                </span>
+                            </li>
+                            <li class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Estimated Delivery:</span>
+                                <span class="text-white fw-bold">30 - 45 Minutes</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ordered Items Summary Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-basket3-fill me-2"></i>Items Ordered</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="border-secondary">
+                            <tr>
+                                <th class="ps-4">Item</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end pe-4">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr class="border-secondary">
+                                <td class="ps-4">
+                                    <div class="fw-bold text-white">{{ item.food_item.name }}</div>
+                                    <small class="text-muted">{{ item.food_item.category.name }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary px-2 py-1">{{ item.quantity }}</span>
+                                </td>
+                                <td class="text-end text-muted">₹{{ item.price }}</td>
+                                <td class="text-end pe-4 text-white fw-bold">
+                                    ₹{% widthratio item.price 1 item.quantity %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="border-secondary">
+                                <td colspan="3" class="text-end text-muted pt-3">Delivery Fee:</td>
+                                <td class="text-end pe-4 text-success fw-bold pt-3">FREE</td>
+                            </tr>
+                            <tr class="border-0">
+                                <td colspan="3" class="text-end fs-5 text-white fw-bold pb-3">Grand Total:</td>
+                                <td class="text-end pe-4 fs-5 text-success fw-bold pb-3">₹{{ order.total_price }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Footer -->
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+            <a href="{% url 'menu' %}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left me-1"></i> Order More Food
+            </a>
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-secondary">
+                    <i class="bi bi-printer me-1"></i> Print Receipt
+                </button>
+                <a href="{% url 'profile' %}" class="btn btn-primary">
+                    <i class="bi bi-person-circle me-1"></i> View Order History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-white">
+                <h3 class="card-title mb-0">Your Shopping Cart</h3>
+            </div>
+            <div class="card-body">
+                {% if cart.items.count > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Subtotal</th>
+                                    <th></th> {# For the remove button #}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart.items.all %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.food_item.image %}
+                                                <img src="{{ item.food_item.image.url }}" class="img-thumbnail me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                            <strong>{{ item.food_item.name }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>₹{{ item.food_item.price }}</td>
+                                    <td>
+                                        <div class="input-group" style="width: 120px;">
+                                            <a href="{% url 'update_cart_item' item.id 'decrease' %}" class="btn btn-outline-secondary btn-sm">-</a>
+                                            <input type="text" class="form-control text-center" value="{{ item.quantity }}" readonly>
+                                            <a href="{% url 'update_cart_item' item.id 'increase' %}" class="btn btn-outline-secondary btn-sm">+</a>
+                                        </div>
+                                    </td>
+                                    <td><strong>₹{{ item.get_total_price }}</strong></td>
+                                    <td>
+                                        <a href="{% url 'remove_from_cart' item.id %}" class="text-danger">&#128465; Remove</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-end border-0"><h4>Total:</h4></td>
+                                    <td class="border-0"><h5>₹{{ cart.get_total_price }}</h5></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'menu' %}" class="btn btn-outline-secondary">Continue Shopping</a>
+                        <a href="{% url 'checkout' %}" class="btn btn-success btn-lg px-5 shadow">Proceed to Checkout</a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <h4 class="text-muted mb-4">Your cart is empty.</h4>
+                        <a href="{% url 'menu' %}" class="btn btn-primary btn-lg">Browse Menu</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

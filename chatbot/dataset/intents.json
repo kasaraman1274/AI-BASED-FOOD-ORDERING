@@ -1,0 +1,235 @@
+{
+    "intents": [
+        {
+            "tag": "greeting",
+            "patterns": [
+                "Hi", "Hey", "Hello", "How are you", "Is anyone there?", "Good day", "Howdy", "What's up", "Good morning", "Good evening",
+                "नमस्ते", "नमस्कार", "हेलो", "हाय", "आप कैसे हैं", "namaste", "namaskar", "hello", "kaisa hai",
+                "Hola", "Buenos días", "Buenas tardes", "Buenas noches", "¿Qué tal?", "Saludos", "Hey qué tal"
+            ],
+            "responses": [
+                "Hello! 👋 I'm your AI Food Assistant. What are you craving today?",
+                "Hey there! 😊 Hungry? I can help you find something delicious!",
+                "Hi! Welcome to AI Foodie! 🍕 Ready to order something amazing?"
+            ]
+        },
+        {
+            "tag": "goodbye",
+            "patterns": [
+                "Bye", "See you later", "Goodbye", "Exit", "See ya", "Later", "Take care", "Ciao", "I'm leaving",
+                "अलविदा", "फिर मिलेंगे", "बाय", "alvida", "phir milenge", "bye bye",
+                "Adiós", "Hasta luego", "Nos vemos", "Chao", "Hasta pronto", "Me voy"
+            ],
+            "responses": [
+                "Goodbye! 👋 Come back whenever you're hungry!",
+                "See you soon! 😊 Have a delicious day!",
+                "Bye! Hope to serve you again soon! 🍔"
+            ]
+        },
+        {
+            "tag": "thanks",
+            "patterns": [
+                "Thanks", "Thank you", "That's helpful", "Awesome thanks", "Thanks for helping", "Great", "Perfect", "You're the best", "Cheers",
+                "धन्यवाद", "शुक्रिया", "बहुत बहुत धन्यवाद", "dhanyawad", "shukriya", "bahut accha",
+                "Gracias", "Muchas gracias", "Muy amable", "Te lo agradezco", "Genial gracias"
+            ],
+            "responses": [
+                "Happy to help! 😊",
+                "Any time! Let me know if you need anything else.",
+                "My pleasure! Enjoy your food! 🍽️"
+            ]
+        },
+        {
+            "tag": "menu",
+            "patterns": [
+                "What's on the menu?", "Show me the menu", "What do you have?", "Food menu", "List items", "See all food", "Show food", "full menu", "what's available",
+                "मेनू दिखाओ", "मेन्यू क्या है", "खाने की सूची", "खाना दिखाओ", "menu dikhao", "khana dikhao", "kya khana hai",
+                "Muéstrame el menú", "Ver menú", "Carta de comida", "¿Qué tienen?", "Mostrar comida", "Menú completo"
+            ],
+            "responses": [
+                "Here's our full menu! 🍽️ Check it out below.",
+                "Let me show you what we've got! We have pizzas, burgers, desserts, and more! 🍕🍔"
+            ],
+            "action": "MENU_REDIRECT"
+        },
+        {
+            "tag": "veg_query",
+            "patterns": [
+                "Show me veg food", "I want vegetarian", "Do you have veg options?", "Veg items", "Vegetarian menu", "Plant based", "Veg only", "I'm vegetarian",
+                "शाकाहारी खाना दिखाओ", "वेज खाना", "शाकाहारी मेनू", "केवल शाकाहारी", "veg khana", "shakahari", "pure veg",
+                "Comida vegetariana", "Opciones vegetarianas", "Solo vegetariano", "Menú vegetariano", "Sin carne"
+            ],
+            "responses": [
+                "Great choice! 🥗 We have amazing vegetarian options like Margherita Pizza, Paneer Tikka, and more!",
+                "We have plenty of delicious veg options! 🌿 Let me show you our vegetarian menu."
+            ],
+            "action": "FILTER_VEG"
+        },
+        {
+            "tag": "nonveg_query",
+            "patterns": [
+                "Show me non-veg", "I want chicken", "Meat options", "Do you have chicken?", "Non vegetarian", "Chicken items", "Meat dishes", "Pepperoni", "BBQ",
+                "मांसाहारी खाना दिखाओ", "चिकन दिखाओ", "नॉन वेज", "चिकन आइटम", "chicken dikhao", "non veg khana", "meat khana",
+                "Comida no vegetariana", "Opciones con carne", "Pollo", "Carne", "Platos con pollo", "No vegetariano"
+            ],
+            "responses": [
+                "Excellent taste! 🍗 We have mouth-watering non-veg options like Pepperoni Pizza, Chicken Burger, and more!",
+                "For all the meat lovers! 🥩 Let me show you our non-veg selection."
+            ],
+            "action": "FILTER_NONVEG"
+        },
+        {
+            "tag": "recommendation",
+            "patterns": [
+                "What do you recommend?", "Recommend me something", "What's popular?", "Best dish", "What should I order?", "Suggest something", "Your best item", "Most ordered", "Top picks", "Recommend food",
+                "क्या सिफारिश करते हो?", "सबसे अच्छा क्या है?", "लोकप्रिय व्यंजन", "मुझे कुछ सुझाएं", "kya recommend karte ho", "sabse accha khana", "top dish kya hai", "kuch accha batao",
+                "¿Qué recomiendas?", "¿Qué me recomiendas?", "Hola qué me recomiendas", "¿Cuál es el mejor plato?", "Recomiéndame algo", "Platos populares", "Sugerencias", "Lo mejor de la casa"
+            ],
+            "responses": [
+                "Our top picks right now are: 🌟 Pepperoni Pizza, Classic Cheeseburger, and Chocolate Fudge Brownie!",
+                "Chef's recommendations today: 👨‍🍳 Margherita Pizza, New York Cheesecake, and Chicken Burger!"
+            ],
+            "action": "SHOW_POPULAR"
+        },
+        {
+            "tag": "order_status",
+            "patterns": [
+                "Where is my order?", "Track order", "Order status", "Is my food ready?", "My order", "When will my food arrive?", "Check my order", "Order update", "Track my food",
+                "मेरा ऑर्डर कहाँ है?", "ऑर्डर ट्रैक करो", "मेरा खाना कहाँ है?", "ऑर्डर की स्थिति", "खाना कब आएगा?", "mera order kahan hai", "order status", "khana kahan pahuncha",
+                "¿Dónde está mi pedido?", "Rastrear pedido", "Estado de mi orden", "¿Dónde viene mi comida?", "Mi pedido", "¿Está lista mi comida?"
+            ],
+            "responses": [
+                "Let me check your order status! 📦",
+                "You can track your order in real-time! 🚚"
+            ],
+            "action": "PROFILE_REDIRECT"
+        },
+        {
+            "tag": "pizza",
+            "patterns": [
+                "I want pizza", "Show me pizzas", "Show me pizza", "Give me pizza", "What pizzas do you have?", "Pizza options", "Cheese pizza", "Pepperoni pizza", "Margherita", "Pizza menu", "Any pizza?",
+                "पिज़्ज़ा दिखाओ", "मुझे पिज़्ज़ा चाहिए", "पिज़्ज़ा मेनू", "मार्गेरीटा पिज़्ज़ा", "पेपरोनी", "pizza dikhao", "pizza chahiye", "pizza lao",
+                "Quiero pizza", "Muéstrame pizzas", "Muéstrame pizza", "Pizzas disponibles", "Menú de pizza", "Pizza de pepperoni", "Pizza margherita"
+            ],
+            "responses": [
+                "Pizza time! 🍕 We have freshly baked Margherita Pizza and Pepperoni Pizza!",
+                "Great choice! Our pizzas are oven-fresh and delicious! 🔥"
+            ],
+            "action": "FILTER_PIZZA"
+        },
+        {
+            "tag": "burger",
+            "patterns": [
+                "I want burger", "Show me burgers", "Show me burger", "Give me burger", "Burgers", "What burgers do you have?", "Burger options", "Chicken burger", "Cheeseburger", "Veggie burger", "Any burgers?",
+                "बर्गर दिखाओ", "मुझे बर्गर चाहिए", "चीज़बर्गर", "चिकन बर्गर", "burger dikhao", "burger chahiye", "burger lao",
+                "Quiero hamburguesa", "Muéstrame hamburguesas", "Muéstrame hamburguesa", "Hamburguesas disponibles", "Hamburguesa con queso", "Hamburguesa de pollo"
+            ],
+            "responses": [
+                "Burger lover? 🍔 We've got juicy burgers like the Classic Cheeseburger and Crispy Chicken Burger!",
+                "Our burgers are handcrafted and delicious! 🍔"
+            ],
+            "action": "FILTER_BURGER"
+        },
+        {
+            "tag": "dessert",
+            "patterns": [
+                "Show me desserts", "I want something sweet", "Dessert options", "Sweet dish", "Cake", "Brownie", "Cheesecake", "Ice cream", "Any desserts?",
+                "मीठा दिखाओ", "मिठाई", "ब्राउनी", "चीज़केक", "आइसक्रीम", "meetha dikhao", "dessert chahiye", "mithai",
+                "Muéstrame postres", "Algo dulce", "Pastel", "Brownie", "Tarta de queso", "Helado", "Postres disponibles"
+            ],
+            "responses": [
+                "Save room for dessert! 🍰 Chocolate Fudge Brownie and New York Cheesecake await!",
+                "Sweet tooth? 🍫 Our desserts are to die for!"
+            ],
+            "action": "FILTER_DESSERT"
+        },
+        {
+            "tag": "cart",
+            "patterns": [
+                "Show my cart", "What's in my cart?", "View cart", "My cart", "Check cart", "Go to cart", "Cart items",
+                "मेरी कार्ट दिखाओ", "कार्ट में क्या है?", "मेरी टोकरी", "कार्ट चेक करो", "meri cart dikhao", "cart me kya hai",
+                "Ver mi carrito", "¿Qué hay en mi carrito?", "Mi carrito", "Revisar carrito", "Abrir carrito"
+            ],
+            "responses": [
+                "Let me check your cart! 🛒",
+                "Here is your current cart summary! 🛒"
+            ],
+            "action": "CART_REDIRECT"
+        },
+        {
+            "tag": "add_to_cart",
+            "patterns": [
+                "Add to cart", "Add pizza to cart", "Add burger to cart", "I want to order", "Order 2 pizzas", "Can you add this to cart", "Put pizza in cart", "Add margherita pizza", "Add pepperoni pizza", "Add cheeseburger", "Buy this item", "Add brownie to cart", "Add 1 pizza", "Add 2 burgers", "Add coke",
+                "कार्ट में जोड़ो", "पिज़्ज़ा कार्ट में डालो", "ऑर्डर करना है", "2 पिज़्ज़ा जोड़ो", "बर्गर ऑर्डर करो", "ब्राउनी डालो", "cart me add karo", "order karo", "pizza daalo",
+                "Añadir al carrito", "Agregar al carrito", "Quiero pedir", "Pedir 2 pizzas", "Poner pizza en el carrito", "Añadir hamburguesa", "Comprar esto", "Agregar 1 pizza"
+            ],
+            "responses": [
+                "Adding that to your cart right now! 🛒",
+                "I'll add that delicious item to your cart! 🍕"
+            ],
+            "action": "ADD_TO_CART"
+        },
+        {
+            "tag": "clear_cart",
+            "patterns": [
+                "Clear cart", "Empty cart", "Remove all items from cart", "Delete cart", "Reset cart",
+                "कार्ट खाली करो", "कार्ट साफ़ करो", "सब हटाओ", "कार्ट रिसेट करो", "cart khali karo", "cart saaf karo",
+                "Vaciar carrito", "Limpiar carrito", "Borrar carrito", "Eliminar todo del carrito"
+            ],
+            "responses": [
+                "Your cart has been cleared! 🗑️ Ready for a fresh start?",
+                "Cart cleared! Feel free to pick something fresh from our menu."
+            ],
+            "action": "CLEAR_CART"
+        },
+        {
+            "tag": "price_query",
+            "patterns": [
+                "How much does it cost?", "What's the price?", "Is it expensive?", "Affordable options", "Price list", "How much is pizza?", "Cost of burger",
+                "कितने का है?", "पिज़्ज़ा की कीमत क्या है?", "दाम बताओ", "कितना खर्च होगा?", "kitne ka hai", "price kya hai", "daam batao",
+                "¿Cuánto cuesta?", "¿Cuál es el precio?", "¿Cuánto vale la pizza?", "Precio de hamburguesa", "Costo", "¿Es caro?"
+            ],
+            "responses": [
+                "Our prices are very reasonable! 💰 Check our menu for details.",
+                "Great value for money! 💲 We have dishes starting from ₹200."
+            ]
+        },
+        {
+            "tag": "delivery_time",
+            "patterns": [
+                "How long does delivery take?", "Delivery time", "When will food arrive?", "Fast delivery?", "How fast?", "Estimated delivery", "ETA",
+                "डिलीवरी में कितना समय लगेगा?", "खाना कब पहुंचेगा?", "डिलीवरी का समय", "delivery time kitna hai", "kab aayega khana",
+                "¿Cuánto tarda la entrega?", "¿Cuándo llega mi comida?", "Tiempo de entrega", "¿Qué tan rápido entregan?", "Tiempo estimado"
+            ],
+            "responses": [
+                "⏱️ Our average delivery time is 30-45 minutes! Hot and fresh right to your door.",
+                "We deliver within 30-45 minutes! 🚴"
+            ]
+        },
+        {
+            "tag": "checkout",
+            "patterns": [
+                "I want to checkout", "Place order", "Buy now", "Complete purchase", "Proceed to payment", "Checkout please",
+                "चेकआउट करो", "पेमेंट करना है", "ऑर्डर पूरा करो", "पैसे चुकाओ", "checkout karo", "payment karna hai",
+                "Quiero pagar", "Ir a pagar", "Finalizar pedido", "Proceder al pago", "Comprar ahora"
+            ],
+            "responses": [
+                "Taking you to checkout! 💳 Almost there!",
+                "Let's complete your order! 🎉"
+            ],
+            "action": "CHECKOUT_REDIRECT"
+        },
+        {
+            "tag": "help",
+            "patterns": [
+                "Help", "What can you do?", "How do I order?", "Guide me", "I'm confused", "What are your features?",
+                "मदद", "तुम क्या कर सकते हो?", "कैसे ऑर्डर करें?", "मेरी मदद करो", "help chahiye", "madad karo",
+                "Ayuda", "¿Qué puedes hacer?", "¿Cómo pedir comida?", "Guíame", "¿Cómo funciona esto?"
+            ],
+            "responses": [
+                "I'm here to help! 🤖 I can recommend dishes, take your order, check prices, and track delivery!",
+                "Happy to help! Ask me anything about dishes, prices, cart, or order status."
+            ]
+        }
+    ]
+}
